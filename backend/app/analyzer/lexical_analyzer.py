@@ -1,4 +1,20 @@
+"""
+Módulo de análisis léxico para JWT.
+
+Valida el formato de un JWT usando un autómata finito y separa los tokens.
+Se aplica como primera fase del análisis de JWT antes de la decodificación.
+"""
+
+from typing import Dict, Any
+
+
 class JWTLexer:
+    """
+    Analizador léxico para JWT usando autómata finito.
+    
+    Valida que un JWT tenga el formato correcto (header.payload.signature)
+    y separa los componentes. Se aplica como Fase 1 del análisis.
+    """
 
     def __init__(self):
 
@@ -21,6 +37,11 @@ class JWTLexer:
         }
 
     def get_char_class(self, char):
+        """
+        Clasifica un carácter como Base64URL ('b'), delimitador ('.') o inválido.
+        
+        Se aplica internamente durante el análisis del token.
+        """
         if char in self.b_chars:
             return 'b'
         elif char in self.d_chars:
@@ -28,8 +49,13 @@ class JWTLexer:
         else:
             return 'other'
 
-    def analyze(self, token):
-
+    def analyze(self, token: str) -> Dict[str, Any]:
+        """
+        Analiza un token JWT y valida su formato léxico.
+        
+        Recibe un string JWT y retorna un diccionario con 'valid', 'tokens',
+        'header', 'payload', 'signature'. Se aplica como Fase 1 antes de la decodificación.
+        """
         current_state = self.start_state
 
         for char in token:
