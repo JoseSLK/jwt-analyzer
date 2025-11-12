@@ -45,11 +45,6 @@ La aplicación estará disponible en: `http://localhost:5000`
 - **GET** `/api/health`
 - Verifica que la API esté funcionando
 
-**Ejemplo:**
-```bash
-GET http://localhost:5000/api/health
-```
-
 **Respuesta:**
 ```json
 {
@@ -63,69 +58,16 @@ GET http://localhost:5000/api/health
 - Analiza un token JWT y valida su formato léxico (Fase 1)
 - Retorna los componentes separados del JWT (header, payload, signature)
 
-**Ejemplo:**
-```bash
-GET http://localhost:5000/api/analyze/lexical/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmb28iLCJuYW1lIjoiSm9obiBEb2UifQ.XM-XSs2Lmp76IcTQ7tVdFcZzN4W_WcoKMNANp925Q9g
-```
-
-**Respuesta:**
-```json
-{
-    "success": true,
-    "result": {
-        "valid": true,
-        "tokens": [
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-            "eyJzdWIiOiJmb28iLCJuYW1lIjoiSm9obiBEb2UifQ",
-            "XM-XSs2Lmp76IcTQ7tVdFcZzN4W_WcoKMNANp925Q9g"
-        ],
-        "header": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-        "payload": "eyJzdWIiOiJmb28iLCJuYW1lIjoiSm9obiBEb2UifQ",
-        "signature": "XM-XSs2Lmp76IcTQ7tVdFcZzN4W_WcoKMNANp925Q9g"
-    }
-}
-```
-
 ### Decodificación de JWT
 - **POST** `/api/analyze/decoder`
 - Decodifica los tokens Base64URL del header y payload a strings JSON (Fase 4)
 - Recibe el resultado del análisis léxico en el cuerpo de la solicitud
 
-**Ejemplo:**
-```bash
-POST http://localhost:5000/api/analyze/decoder
-Content-Type: application/json
-```
-
-**Request Body:**
-```json
-{
-    "valid": true,
-    "tokens": [
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-        "eyJzdWIiOiJmb28iLCJuYW1lIjoiSm9obiBEb2UifQ",
-        "XM-XSs2Lmp76IcTQ7tVdFcZzN4W_WcoKMNANp925Q9g"
-    ],
-    "header": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-    "payload": "eyJzdWIiOiJmb28iLCJuYW1lIjoiSm9obiBEb2UifQ",
-    "signature": "XM-XSs2Lmp76IcTQ7tVdFcZzN4W_WcoKMNANp925Q9g"
-}
-```
-
-**Respuesta:**
-```json
-{
-    "success": true,
-    "result": [
-        "{\"alg\":\"HS256\",\"typ\":\"JWT\"}",
-        "{\"sub\":\"foo\",\"name\":\"John Doe\"}"
-    ]
-}
-```
-
 **Nota:** El resultado es un array con dos elementos:
 - `result[0]`: Header decodificado en formato JSON string
 - `result[1]`: Payload decodificado en formato JSON string
+
+Para ver ejemplos de uso y casos de prueba, consulta [EJEMPLOS.md](EJEMPLOS.md).
 
 ## Flujo de Uso
 
