@@ -36,6 +36,28 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmb28iLCJuYW1lIjoiSm9obiBEb2UifQ.
 }
 ```
 
+
+
+**Respuesta Analyzador Syntactico:**
+```json
+
+{
+  "success": true,
+  "valid": true,
+  "header": {
+    "alg": "HS256",
+    "typ": "JWT"
+  },
+  "payload": {
+    "sub": "foo",
+    "name": "John Doe"
+  },
+  "errors": []
+}
+
+
+```
+
 ## Caso 2: JWT con Usuario Admin
 
 **JWT:**
@@ -71,6 +93,37 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FwaS5taS1wcm95ZWN0by5
     "success": true
 }
 ```
+
+
+**Respuesta Analyzador Syntactico:**
+```json
+
+{
+  "success": true,
+  "valid": true,
+  "header": {
+    "alg": "HS256",
+    "typ": "JWT"
+  },
+  "payload": {
+    "iss": "https://api.mi-proyecto.com",
+    "sub": "auth0|1234567890",
+    "aud": "https://api.mi-proyecto.com/v1",
+    "iat": 1762956000,
+    "exp": 1762959600,
+    "nbf": 1762956000,
+    "jti": "abc-def-123",
+    "username": "jose.salamanca",
+    "role": "admin"
+  },
+  "errors": []
+}
+
+
+
+```
+
+
 
 ## Caso 3: JWT con Usuario Regular
 
@@ -108,6 +161,36 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FwaS5taS1wcm95ZWN0by5
 }
 ```
 
+
+**Respuesta Analyzador Syntactico:**
+```json
+
+{
+    "success": true,
+    "valid": true,
+    "header": {
+        "alg": "HS256",
+        "typ": "JWT"
+    },
+    "payload": {
+        "iss": "https://api.mi-proyecto.com",
+        "sub": "auth0|0987654321",
+        "aud": "https://api.mi-proyecto.com/v1",
+        "iat": 1762948800,
+        "exp": 1762952400,
+        "nbf": 1762948800,
+        "jti": "ghi-jkl-456",
+        "username": "samuel.user",
+        "role": "user"
+    },
+    "errors": []
+}
+
+
+```
+
+
+
 ## Caso 4: JWT con HS384 y Permisos
 
 **JWT:**
@@ -144,3 +227,34 @@ eyJhbGciOiJIU380IiwidHlwIjoiSldUIn0.eyJpc3MiOiJodHRwczovL2F1dGgubWktcHJveWVjdG8u
 }
 ```
 
+
+**Respuesta Analyzador Syntactico:**
+```json
+{
+  "success": true,
+  "valid": true,
+  "header": {
+    "alg": "HS384",
+    "typ": "JWT"
+  },
+  "payload": {
+    "iss": "https://auth.mi-proyecto.com",
+    "sub": "google-oauth2|1122334455",
+    "aud": [
+      "https://api.mi-proyecto.com/v1",
+      "https://admin.mi-proyecto.com"
+    ],
+    "iat": 1762956000,
+    "exp": 1762959600,
+    "jti": "mno-pqr-789",
+    "email": "test@gmail.com",
+    "permissions": [
+      "read:data",
+      "write:data"
+    ]
+  },
+  "errors": []
+}
+
+
+```

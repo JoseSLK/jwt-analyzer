@@ -69,6 +69,33 @@ La aplicación estará disponible en: `http://localhost:5000`
 
 Para ver ejemplos de uso y casos de prueba, consulta [EJEMPLOS.md](EJEMPLOS.md).
 
+### Análisis Sintáctico de JWT
+- **POST** `/api/analyze/syntactic`
+- Analiza la estructura interna del *header* y *payload* decodificados (Fase 5).
+- Verifica que ambos componentes correspondan a objetos JSON válidos y que cumplan con la estructura mínima requerida por el estándar JWT.
+
+El analizador realiza las siguientes validaciones:
+
+- Que el **header** sea un diccionario JSON válido.
+- Que exista el campo **`typ`** y que su valor sea **exactamente `"JWT"`**.  
+  - Si no coincide, se genera un **error fatal** y el análisis se marca como inválido.
+- Que exista el campo **`alg`** y que su valor sea un string válido.
+- Que el **payload** sea un diccionario JSON válido.
+- Que no existan errores de sintaxis en ninguno de los dos segmentos.
+
+**Salida del Analizador Sintáctico**
+
+El analizador retorna un objeto con:
+
+```json
+{
+  "valid": true | false,
+  "errors": ["lista de errores si existen"],
+  "header": { "diccionario con el contenido del header" },
+  "payload": { "diccionario con el contenido del payload" }
+}
+
+
 ## Flujo de Uso
 
 1. **Paso 1:** Realizar análisis léxico del JWT usando `/api/analyze/lexical/<jwt_token>`
