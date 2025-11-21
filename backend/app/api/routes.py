@@ -9,6 +9,7 @@ from flask import Blueprint, jsonify, request
 from app.analyzer.lexical_analyzer import JWTLexer
 from app.analyzer.decoder_json import get_decoded_strings
 from app.analyzer.encoder import encode_jwt
+from app.analyzer.crypto_verifier import verify_jwt_signature
 from app.analyzer.semantic_analyzer import (
     SemanticAnalyzer,
     SemanticError,
@@ -216,6 +217,77 @@ def encode_jwt_endpoint():
             'success': False,
             'error': str(e)
         }), 400
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@api_bp.route('/analyze/crypto-verification', methods=['POST'])
+def verify_jwt_crypto():
+    """
+    Endpoint para verificación criptográfica de JWT.
+    
+    Recibe un JWT completo y una clave secreta. Recalcula la firma digital
+    basándose en el contenido del header y payload y la compara con la firma
+    adjunta en el token, validando así la integridad criptográfica.
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No se recibió JSON en el cuerpo de la solicitud'
+            }), 400
+        
+        if 'jwt' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'El JSON debe contener el campo "jwt" con el token JWT completo'
+            }), 400
+        
+        if 'secret' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'El JSON debe contener el campo "secret" con la clave secreta'
+            }), 400
+        
+        jwt_token = data['jwt']
+        secret = data['secret']
+        
+        if not isinstance(jwt_token, str):
+            return jsonify({
+                'success': False,
+                'error': 'El campo "jwt" debe ser un string'
+            }), 400
+        
+        if not isinstance(secret, str):
+            return jsonify({
+                'success': False,
+                'error': 'El campo "secret" debe ser un string'
+            }), 400
+        
+        # Verificar la firma criptográfica
+        result = verify_jwt_signature(jwt_token, secret)
+        
+        if result['valid']:
+            return jsonify({
+                'success': True,
+                'valid': True,
+                'algorithm': result['algorithm'],
+                'header': result['header'],
+                'payload': result['payload']
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'valid': False,
+                'error': result.get('error', 'Verificación fallida'),
+                'algorithm': result.get('algorithm'),
+                'header': result.get('header')
+            }), 400
+            
     except Exception as e:
         return jsonify({
             'success': False,
