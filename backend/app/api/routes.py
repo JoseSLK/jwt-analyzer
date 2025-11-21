@@ -8,6 +8,7 @@ Se aplica como interfaz HTTP para el frontend y clientes externos.
 from flask import Blueprint, jsonify, request
 from app.analyzer.lexical_analyzer import JWTLexer
 from app.analyzer.decoder_json import get_decoded_strings
+from app.analyzer.encoder import encode_jwt
 from app.analyzer.semantic_analyzer import (
     SemanticAnalyzer,
     SemanticError,
@@ -155,6 +156,65 @@ def analyze_jwt_semantic():
             'success': False,
             'error': str(e),
             'error_type': 'SemanticError'
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@api_bp.route('/analyze/encoder', methods=['POST'])
+def encode_jwt_endpoint():
+    """
+    Endpoint para codificación y firma de JWT.
+    
+    Recibe header y payload como objetos JSON y retorna el JWT completo
+    codificado en Base64URL y firmado con el algoritmo especificado (HS256 o HS384).
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No se recibió JSON en el cuerpo de la solicitud'
+            }), 400
+        
+        if 'header' not in data or 'payload' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'El JSON debe contener "header" y "payload" como objetos JSON'
+            }), 400
+        
+        header = data['header']
+        payload = data['payload']
+        
+        if not isinstance(header, dict) or not isinstance(payload, dict):
+            return jsonify({
+                'success': False,
+                'error': 'Los campos "header" y "payload" deben ser objetos JSON (diccionarios)'
+            }), 400
+        
+        # Obtener la clave secreta (opcional, por defecto "secret")
+        secret = data.get('secret', 'secret')
+        
+        if not isinstance(secret, str):
+            return jsonify({
+                'success': False,
+                'error': 'El campo "secret" debe ser un string'
+            }), 400
+        
+        # Codificar y firmar el JWT
+        jwt_token = encode_jwt(header, payload, secret)
+        
+        return jsonify({
+            'success': True,
+            'jwt': jwt_token
+        })
+    except ValueError as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
         }), 400
     except Exception as e:
         return jsonify({
