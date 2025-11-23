@@ -70,6 +70,19 @@
         </main>
     </div>
 
+    <!-- Configuración de variables de entorno -->
+    <script>
+        // Variables de entorno para la aplicación
+        // En producción, estas se pueden inyectar desde el servidor
+        // o definir aquí con los valores correctos
+        window.ENV = window.ENV || {
+            // API_URL se puede definir aquí o inyectar desde el servidor
+            // Ejemplo para Railway: 'https://tu-backend.railway.app/api'
+            // Ejemplo para desarrollo local: 'http://localhost:5000/api'
+            API_URL: 'http://localhost:5000/api'
+        };
+    </script>
+    
     <!-- Scripts modulares con ES Modules -->
     <script type="module" src="js/app.js"></script>
 </body>

@@ -11,13 +11,15 @@
  * @module services/JwtService
  */
 
+import config from '../config.js';
+
 /**
  * URL base de la API del backend.
- * Cambiar según la configuración del servidor.
+ * Se obtiene de la configuración (variables de entorno).
  * 
  * @constant {string}
  */
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = config.API_BASE_URL;
 
 /**
  * Clase JwtService
