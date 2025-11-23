@@ -19,6 +19,8 @@ from app.analyzer.semantic_analyzer import (
     ExpirationDateError,
     NotActiveTokenError
 )
+from app.analyzer.syntactic_analyzer import analyze_syntax
+
 
 api_bp = Blueprint('api', __name__)
 jwt_lexer = JWTLexer()
@@ -293,6 +295,48 @@ def verify_jwt_crypto():
             'success': False,
             'error': str(e)
         }), 500
+
+@api_bp.route('/analyze/semantic_analyzer', methods=['POST'])
+
+@api_bp.route('/analyze/syntax', methods=['POST'])
+def syntax_analyzer_endpoint():
+    """
+    Endpoint para el análisis sintáctico del JWT.
+    Recibe dos strings JSON provenientes del decoder.
+    """
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No se recibió JSON en el cuerpo de la solicitud'
+            }), 400
+
+        # Se espera: { "result": ["json_header", "json_payload"] }
+        if "result" not in data or not isinstance(data["result"], list) or len(data["result"]) != 2:
+            return jsonify({
+                'success': False,
+                'error': 'Formato inválido. Se esperaba {"result": ["header", "payload"]}'
+            }), 400
+
+        header_str = data["result"][0]  # STRING JSON
+        payload_str = data["result"][1] # STRING JSON
+
+        # Llamar a tu analizador sintáctico
+        result = analyze_syntax(header_str, payload_str)
+
+        return jsonify({
+            'success': True,
+            'result': result
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 
 @api_bp.route('/health', methods=['GET'])
 def health_check():
