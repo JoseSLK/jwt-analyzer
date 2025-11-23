@@ -2,14 +2,16 @@
 Módulo de codificación y firma para JWT.
 
 Codifica objetos JSON a Base64URL y aplica algoritmos de firma (HS256 o HS384).
-Se aplica para generar tokens JWT completos y firmados.
+Valida la estructura sintáctica y semántica del header y payload antes de codificar.
 """
 
 import json
 import base64
 import hmac
 import hashlib
-from typing import Dict, Any, Optional
+from typing import Dict, Any
+from app.analyzer.syntactic_analyzer import analyze_syntax
+from app.analyzer.semantic_analyzer import SemanticAnalyzer
 
 
 def encode_base64url(data: str) -> str:
@@ -53,31 +55,43 @@ def sign_token(header_b64: str, payload_b64: str, algorithm: str, secret: str) -
 
 def encode_jwt(header: Dict[str, Any], payload: Dict[str, Any], secret: str = "secret") -> str:
     """
-    Codifica y firma un JWT completo.
+    Codifica y firma un JWT completo con validación sintáctica y semántica previa.
     
-    Recibe header y payload como diccionarios, y una clave secreta.
-    Retorna el JWT completo en formato: header.payload.signature
+    Valida la estructura del header y payload usando analizadores sintáctico y semántico
+    antes de proceder con la codificación y firma.
     
     Args:
-        header: Diccionario con los claims del header (debe incluir 'alg' y 'typ')
+        header: Diccionario con los claims del header
         payload: Diccionario con los claims del payload
         secret: Clave secreta para la firma (por defecto "secret")
     
     Returns:
         String con el JWT completo codificado y firmado
+    
+    Raises:
+        ValueError: Si la validación sintáctica falla
+        MissingClaimError: Si faltan claims obligatorios
+        InvalidDataTypeError: Si los tipos de datos son incorrectos
+        InvalidValueError: Si los valores son inválidos
+        ExpirationDateError: Si el token está expirado
+        NotActiveTokenError: Si el token aún no es válido (nbf)
     """
-    # Validar que el header tenga 'alg'
-    if 'alg' not in header:
-        raise ValueError("El header debe contener el claim 'alg'")
-    
-    algorithm = header['alg']
-    
-    if algorithm not in ["HS256", "HS384"]:
-        raise ValueError(f"Algoritmo no soportado: {algorithm}. Solo se soportan HS256 y HS384.")
-    
-    # Serializar a JSON compacto (sin espacios)
+    # Serializar a JSON para validación sintáctica
     header_json = json.dumps(header, separators=(',', ':'))
     payload_json = json.dumps(payload, separators=(',', ':'))
+    
+    # Validar sintaxis
+    syntax_result = analyze_syntax(header_json, payload_json)
+    if not syntax_result['valid']:
+        errors = '; '.join(syntax_result['errors'])
+        raise ValueError(f"Validación sintáctica fallida: {errors}")
+    
+    # Validar semántica
+    semantic_analyzer = SemanticAnalyzer()
+    semantic_analyzer.analyze(header, payload)
+    
+    # Obtener algoritmo
+    algorithm = header['alg']
     
     # Codificar a Base64URL
     header_b64 = encode_base64url(header_json)
@@ -87,7 +101,5 @@ def encode_jwt(header: Dict[str, Any], payload: Dict[str, Any], secret: str = "s
     signature_b64 = sign_token(header_b64, payload_b64, algorithm, secret)
     
     # Construir el JWT completo
-    jwt_token = f"{header_b64}.{payload_b64}.{signature_b64}"
-    
-    return jwt_token
+    return f"{header_b64}.{payload_b64}.{signature_b64}"
 
