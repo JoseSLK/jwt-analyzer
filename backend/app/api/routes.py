@@ -20,6 +20,7 @@ from app.analyzer.semantic_analyzer import (
     NotActiveTokenError
 )
 from app.analyzer.syntactic_analyzer import analyze_syntax
+from app.services.database_service import DatabaseService
 
 
 api_bp = Blueprint('api', __name__)
@@ -332,6 +333,57 @@ def syntax_analyzer_endpoint():
         })
 
     except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@api_bp.route('/jwts', methods=['GET'])
+def get_jwts():
+    """
+    Endpoint para obtener la lista de todos los JWTs de la base de datos.
+    
+    Retorna una lista de JWTs con su información completa.
+    """
+    try:
+        jwts = DatabaseService.get_all_jwts()
+        
+        # Transformar los datos al formato esperado por el frontend
+        formatted_jwts = []
+        for jwt in jwts:
+            # Obtener el secreto directamente
+            secreto_valor = jwt.get('secreto')
+            
+            # Construir el diccionario asegurando que secreto siempre esté presente
+            # Usar un valor por defecto si es None para evitar que Flask lo omita
+            formatted_jwt = {
+                'id': str(jwt.get('_id', '')),
+                'token': str(jwt.get('token', '')),
+                'name': str(jwt.get('name', f"JWT {str(jwt.get('_id', ''))[:8]}")),
+                'createdAt': str(jwt.get('createdAt', jwt.get('_id', ''))),
+                'valido': jwt.get('valido'),
+                'secreto': str(secreto_valor) if secreto_valor is not None else '',  # Usar string vacío en lugar de None
+            }
+            
+            # Agregar tipo_error si existe
+            if 'tipo_error' in jwt:
+                formatted_jwt['tipo_error'] = str(jwt['tipo_error'])
+            else:
+                formatted_jwt['tipo_error'] = None
+            
+            formatted_jwts.append(formatted_jwt)
+        
+        return jsonify({
+            'success': True,
+            'jwts': formatted_jwts
+        })
+    except Exception as e:
+        # Log del error para debugging
+        print(f"Error en get_jwts: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
         return jsonify({
             'success': False,
             'error': str(e)
