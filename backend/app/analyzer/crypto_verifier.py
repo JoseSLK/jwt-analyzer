@@ -5,11 +5,11 @@ Verifica la integridad criptográfica de un JWT recalculando la firma
 y comparándola con la firma adjunta en el token.
 """
 
-import json
 import base64
 import hmac
 import hashlib
 from typing import Dict, Any
+from .syntactic_analyzer import parse_json_manual, JSONParseError
 
 
 def decode_base64url(encoded_string: str) -> str:
@@ -91,8 +91,8 @@ def verify_jwt_signature(jwt_token: str, secret: str) -> Dict[str, Any]:
         # Decodificar el header para obtener el algoritmo
         try:
             header_json = decode_base64url(header_b64)
-            header = json.loads(header_json)
-        except (ValueError, json.JSONDecodeError) as e:
+            header = parse_json_manual(header_json)
+        except (ValueError, JSONParseError) as e:
             return {
                 'valid': False,
                 'error': f'Error al decodificar el header: {e}'
@@ -139,8 +139,8 @@ def verify_jwt_signature(jwt_token: str, secret: str) -> Dict[str, Any]:
         # Decodificar el payload para incluirlo en la respuesta
         try:
             payload_json = decode_base64url(payload_b64)
-            payload = json.loads(payload_json)
-        except (ValueError, json.JSONDecodeError) as e:
+            payload = parse_json_manual(payload_json)
+        except (ValueError, JSONParseError) as e:
             return {
                 'valid': False,
                 'error': f'Error al decodificar el payload: {e}'
